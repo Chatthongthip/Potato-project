@@ -1,0 +1,330 @@
+:root {
+    --color-bg: #04070d;
+    --color-panel: #07111d;
+    --color-ink: #d7ecff;
+    --color-muted: #7f9db8;
+    --color-accent: #7ad7ff;
+    --color-danger: #ff5d6c;
+    --color-warn: #f0c14a;
+    --color-ok: #3ee0a2;
+    --color-line: rgba(90, 190, 255, 0.28);
+    --font-sans: "Sarabun", "IBM Plex Sans Thai", sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    height: 100%;
+    background: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+}
+
+button {
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+    background: rgba(6, 18, 34, 0.96);
+    color: var(--color-ink);
+    border-radius: 2px;
+    box-shadow: 0 0 18px rgba(80, 190, 255, 0.35);
+}
+
+.leaflet-popup-content-wrapper {
+    border: 1px solid rgba(120, 210, 255, 0.5);
+}
+
+.leaflet-popup-content {
+    margin: 10px 12px;
+    width: 260px;
+    max-height: 280px;
+    overflow: auto;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.leaflet-popup-content ul {
+    margin: 4px 0 8px;
+    padding-left: 16px;
+}
+
+.leaflet-container {
+    background: #1c2836;
+    font-family: var(--font-sans);
+}
+
+.leaflet-tile-pane {
+    filter: none;
+}
+
+.map-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 999px;
+}
+
+.dot.red {
+    background: var(--color-danger);
+    box-shadow: 0 0 0 5px rgba(255, 93, 108, 0.22), 0 0 16px var(--color-danger);
+}
+
+.dot.yellow {
+    background: var(--color-warn);
+    box-shadow: 0 0 0 5px rgba(240, 193, 74, 0.22), 0 0 16px var(--color-warn);
+}
+
+.dot.green {
+    background: var(--color-ok);
+    box-shadow: 0 0 0 5px rgba(62, 224, 162, 0.22), 0 0 16px var(--color-ok);
+}
+
+.leaflet-marker-icon,
+.leaflet-div-icon {
+    background: transparent;
+    border: 0;
+    overflow: visible !important;
+}
+
+.cname {
+    color: #9fd4ff;
+    font-weight: 600;
+    white-space: nowrap;
+    pointer-events: none;
+    text-shadow: 0 0 6px #06101c, 0 0 2px #06101c;
+    text-align: center;
+}
+
+.cname.sm {
+    font-size: 11px;
+}
+
+.hud-page {
+    height: 100dvh;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 8px;
+    padding: 12px 14px;
+    background: radial-gradient(ellipse at 50% -10%, rgba(50, 140, 200, 0.18), transparent 46%), var(--color-bg);
+}
+
+.hud-kicker {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.hud-index {
+    font-size: 32px;
+    line-height: 1;
+    font-weight: 600;
+    color: #e7f7ff;
+}
+
+.hud-kicker h1 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.hud-kicker p {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+}
+
+.hud-screen {
+    min-height: 0;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    border: 1px solid rgba(120, 196, 255, 0.38);
+    background: rgba(5, 14, 26, 0.94);
+    box-shadow: 0 0 36px rgba(40, 140, 200, 0.12), inset 0 0 60px rgba(8, 30, 54, 0.35);
+}
+
+.hud-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--color-line);
+}
+
+.hud-body {
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: 168px minmax(240px, 1fr) auto;
+}
+
+.hud-side {
+    min-height: 0;
+    overflow: auto;
+    background: rgba(5, 16, 30, 0.92);
+}
+
+.hud-side-l {
+    display: flex;
+    flex-direction: column;
+    border-bottom: 1px solid var(--color-line);
+}
+
+.hud-side-r {
+    border-top: 1px solid var(--color-line);
+}
+
+.hud-item {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 8px;
+    border: 0;
+    border-left: 2px solid transparent;
+    background: transparent;
+    color: var(--color-ink);
+    text-align: left;
+    padding: 7px 10px;
+    font-size: 13px;
+}
+
+.hud-item.on {
+    border-left-color: var(--color-accent);
+    background: rgba(122, 215, 255, 0.08);
+    color: #fff;
+}
+
+.hud-mapveil {
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    box-shadow: inset 0 0 40px rgba(3, 10, 20, 0.28);
+}
+
+.hud-ring {
+    width: 72px;
+    height: 72px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    flex: none;
+}
+
+.hud-ring span {
+    width: 52px;
+    height: 52px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    background: #07111d;
+    color: var(--color-accent);
+    font-size: 16px;
+}
+
+.hud-facts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    max-height: 148px;
+    overflow: auto;
+    border-top: 1px solid var(--color-line);
+}
+
+.hud-fact {
+    padding: 8px 10px;
+    border-top: 1px solid rgba(120, 190, 230, 0.12);
+}
+
+@media (min-width: 700px) {
+    .hud-body {
+        grid-template-columns: 176px minmax(0, 1fr);
+        grid-template-rows: minmax(0, 1fr) auto;
+    }
+    .hud-side-l {
+        grid-row: 1 / span 2;
+        border-bottom: 0;
+        border-right: 1px solid var(--color-line);
+    }
+    .hud-side-r {
+        max-height: 230px;
+    }
+}
+
+@media (min-width: 1100px) {
+    .hud-body {
+        grid-template-columns: 210px minmax(0, 1fr) 250px;
+        grid-template-rows: minmax(0, 1fr);
+    }
+    .hud-side-l {
+        grid-row: auto;
+    }
+    .hud-side-r {
+        max-height: none;
+        border-top: 0;
+        border-left: 1px solid var(--color-line);
+    }
+    .hud-facts {
+        grid-template-columns: repeat(4, 1fr);
+        max-height: 132px;
+    }
+    .hud-fact {
+        border-top: 0;
+        border-left: 1px solid rgba(120, 190, 230, 0.12);
+    }
+    .hud-fact:first-child {
+        border-left: 0;
+    }
+}
+
+.text-accent {
+    color: var(--color-accent);
+}
+
+.text-muted {
+    color: var(--color-muted);
+}
+
+.text-ink {
+    color: var(--color-ink);
+}
+
+.text-xs {
+    font-size: 12px;
+}
+
+.text-sm {
+    font-size: 14px;
+}
+
+.bg-danger {
+    background: var(--color-danger);
+}
+
+.bg-warn {
+    background: var(--color-warn);
+}
+
+.bg-ok {
+    background: var(--color-ok);
+}
+
+.border-accent {
+    border-color: var(--color-accent);
+}
+
+.border-line {
+    border-color: var(--color-line);
+}
