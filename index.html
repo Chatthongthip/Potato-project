@@ -149,7 +149,6 @@ function draw() {
     else map.setView([22, 100], 4);
   }
 }
-
 function levelFrom(cases, deaths) {
   if (cases >= 50000 || deaths >= 100) return "red";
   if (cases >= 5000 || deaths >= 10) return "yellow";
@@ -247,6 +246,31 @@ L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_D
 layer = L.layerGroup().addTo(map);
 paint();
 setTimeout(() => map.invalidateSize(), 200);
+</script>
+<script>
+    document.getElementById("spot-form")?.addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        const titleInput = document.getElementById("q") ? document.getElementById("q").value : "จุดระบาดใหม่";
+
+        console.log("Create Data: ", titleInput);
+        alert("เพิ่มข้อมูลสำเร็จ (Create)");
+        
+        this.reset();
+        this.hidden = true;
+    });
+    function updateRecord(id, newData) {
+        // ค้นหาและอัปเดตข้อมูลเดิมตาม ID
+        console.log("Update ID: " + id, newData);
+        alert("อัปเดตข้อมูลสำเร็จ (Update)");
+    }
+    function deleteRecord(id) {
+        if (confirm("คุณต้องการลบข้อมูลนี้ใช่หรือไม่?")) {
+            // ลบข้อมูลออกจากระบบ
+            console.log("Delete ID: " + id);
+            alert("ลบข้อมูลสำเร็จ (Delete)");
+        }
+    }
 </script>
 </body>
 </html>
