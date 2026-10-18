@@ -248,29 +248,99 @@ paint();
 setTimeout(() => map.invalidateSize(), 200);
 </script>
 <script>
-    document.getElementById("spot-form")?.addEventListener("submit", function(e) {
-        e.preventDefault();
+const SUPABASE_URL = "https://vsxospgevwogekjbcshm.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZzeG9zcGdldndvZ2VramJjc2htIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzMjE0MjEsImV4cCI6MjEwNzg5NzQyMX0.QpbWu9OrcEUnVlVMSdUJJiV91p5niddxz8mgsGwjxQ8";
 
-        const titleInput = document.getElementById("q") ? document.getElementById("q").value : "จุดระบาดใหม่";
-
-        console.log("Create Data: ", titleInput);
-        alert("เพิ่มข้อมูลสำเร็จ (Create)");
-        
-        this.reset();
-        this.hidden = true;
+function sbHead(prefer) {
+  const headers = { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY, "Content-Type": "application/json" };
+  if (prefer) headers.Prefer = prefer;
+  return headers;
+}
+function setDbStatus(text) {
+  const node = document.getElementById("db-status") || document.getElementById("asof");
+  if (node) node.textContent = text;
+}
+function rowFromSpot(spot) {
+  return { id: spot.id, disease_id: spot.disease, country: spot.country, admin_area: spot.admin, lat: spot.lat, lng: spot.lng, status: spot.status, level: spot.level, cases: String(spot.cases), deaths: String(spot.deaths), as_of: spot.asOf || "บันทึกจากฟอร์ม", note: spot.note || "ข้อมูลที่บันทึกผ่านหน้าเว็บ" };
+}
+function spotFromRow(row) {
+  return { id: row.id, disease: row.disease_id, country: row.country, admin: row.admin_area, lat: Number(row.lat), lng: Number(row.lng), status: row.status, level: row.level, cases: row.cases, deaths: row.deaths, asOf: row.as_of, note: row.note };
+}
+async function saveSpotRow(spot) {
+  const res = await fetch(SUPABASE_URL + "/rest/v1/outbreak_spots?on_conflict=id", {
+    method: "POST",
+    headers: sbHead("resolution=merge-duplicates,return=minimal"),
+    body: JSON.stringify(rowFromSpot(spot))
+  });
+  if (!res.ok) throw new Error(await res.text());
+}
+async function deleteSpotRow(id) {
+  const res = await fetch(SUPABASE_URL + "/rest/v1/outbreak_spots?id=eq." + encodeURIComponent(id), {
+    method: "DELETE",
+    headers: sbHead("return=minimal")
+  });
+  if (!res.ok) throw new Error(await res.text());
+}
+async function loadSpots() {
+  const res = await fetch(SUPABASE_URL + "/rest/v1/outbreak_spots?select=*", { headers: sbHead() });
+  if (res.status === 404) { setDbStatus("ยังไม่มีตาราง ต้องรัน SQL ก่อน"); return; }
+  if (!res.ok) { setDbStatus("อ่าน Supabase ไม่ได้"); return; }
+  let rows = await res.json();
+  if (!rows.length && DATA.SPOTS.length) {
+    const seed = await fetch(SUPABASE_URL + "/rest/v1/outbreak_spots?on_conflict=id", {
+      method: "POST",
+      headers: sbHead("resolution=merge-duplicates,return=minimal"),
+      body: JSON.stringify(DATA.SPOTS.map(rowFromSpot))
     });
-    function updateRecord(id, newData) {
-        // ค้นหาและอัปเดตข้อมูลเดิมตาม ID
-        console.log("Update ID: " + id, newData);
-        alert("อัปเดตข้อมูลสำเร็จ (Update)");
-    }
-    function deleteRecord(id) {
-        if (confirm("คุณต้องการลบข้อมูลนี้ใช่หรือไม่?")) {
-            // ลบข้อมูลออกจากระบบ
-            console.log("Delete ID: " + id);
-            alert("ลบข้อมูลสำเร็จ (Delete)");
-        }
-    }
+    if (!seed.ok) { setDbStatus("นำเข้าข้อมูลไม่สำเร็จ"); return; }
+    rows = DATA.SPOTS.map((spot) => rowFromSpot(spot));
+  }
+  DATA.SPOTS = rows.map(spotFromRow);
+  setDbStatus("เชื่อม Supabase แล้ว");
+  paint();
+}
+
+const oldOpen = openForm;
+openForm = function (spot) {
+  oldOpen(spot);
+  document.querySelectorAll("[data-del]").forEach((btn) => {
+    btn.onclick = async () => {
+      try {
+        await deleteSpotRow(btn.dataset.del);
+        DATA.SPOTS = DATA.SPOTS.filter((item) => item.id !== btn.dataset.del);
+        paint();
+        openForm();
+      } catch (error) { alert("ลบใน Supabase ไม่สำเร็จ\n" + error.message); }
+    };
+  });
+};
+
+const oldForm = document.getElementById("spot-form");
+const form = oldForm.cloneNode(true);
+oldForm.replaceWith(form);
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const cases = Number(document.getElementById("f-cases").value);
+  const deaths = Number(document.getElementById("f-deaths").value);
+  const country = document.getElementById("f-country").value.trim();
+  const admin = document.getElementById("f-admin").value.trim();
+  if (!country || !admin || Number.isNaN(cases) || Number.isNaN(deaths)) return;
+  const id = document.getElementById("edit-id").value;
+  const pos = coordsFor(country);
+  const previous = DATA.SPOTS.find((item) => item.id === id);
+  const next = { id: id || ("new-" + Date.now()), disease: document.getElementById("f-disease").value, country, admin, lat: previous ? previous.lat : pos.lat, lng: previous ? previous.lng : pos.lng, status: document.getElementById("f-status").value, level: levelFrom(cases, deaths), cases: String(cases), deaths: String(deaths), asOf: "บันทึกจากฟอร์ม", note: "ข้อมูลที่บันทึกผ่านหน้าเว็บ" };
+  try {
+    await saveSpotRow(next);
+    if (id) DATA.SPOTS = DATA.SPOTS.map((item) => item.id === id ? next : item);
+    else DATA.SPOTS = [next, ...DATA.SPOTS];
+    selected = next.disease;
+    status = "all";
+    form.hidden = true;
+    paint();
+  } catch (error) { alert("บันทึกลง Supabase ไม่สำเร็จ\n" + error.message); }
+});
+document.getElementById("btn-cancel").onclick = () => { form.hidden = true; };
+loadSpots();
 </script>
 </body>
 </html>
